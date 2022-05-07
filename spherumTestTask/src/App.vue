@@ -1,119 +1,203 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from '@/components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+    <div class="parentContent">
+        <div class="mainContent">
+            <div class="leftContent scroll">
+                <h2>Доступные книги</h2>
+                <booksList @toBasket="toBasket" :books="books"/>
+            </div>
+            <div class="separator"></div>
+            <div class="rightContent">
+                <profile :user="user" @discardBook="discardBook"/>
+            </div>
+        </div>
     </div>
-  </header>
-
-  <RouterView />
 </template>
 
+<script>
+import booksList from './components/booksList.vue';
+import profile from './components/profile.vue';
+
+export default {
+    components: { booksList, profile },
+    data(){
+        return {
+            user: {
+                balance: 100,
+                basket: {
+                    books: [],
+                    booksBought: 0,
+                    booksBoughtPrice: 0,
+                }
+            },
+            books: [
+                {
+                    id: 1,
+                    name: 'Совершенный код. Мастер-класс',
+                    price: 100,
+                    amount: 3
+                },
+                {
+                    id: 2,
+                    name: 'Rapid Development, Steve McConnell',
+                    price: 180,
+                    amount: 2
+                },
+                {
+                    id: 3,
+                    name: 'Искусство программирования, Д.Кнут',
+                    price: 210,
+                    amount: 1
+                }
+            ]
+        }
+    },
+    methods: {
+        toBasket(id){
+            let book = this.books.find(e => e.id == id);
+            book.amount--;
+            this.user.basket.booksBought++;
+            this.user.basket.booksBoughtPrice += book.price;
+
+            let index = this.user.basket.books.findIndex(e => e.id == book.id);
+            if(index != -1){
+                this.user.basket.books[index].amount++;
+            }else{
+                let newBook = Object.assign({}, book);
+                newBook.amount = 1;
+                this.user.basket.books.push(newBook);
+            }
+        },
+        discardBook(id){
+            let book = this.books.find(e => e.id == id);
+            book.amount++;
+            this.user.basket.booksBought--;
+            this.user.basket.booksBoughtPrice -= book.price;
+        }
+    },
+    mounted(){
+        for(let i = 4; i < 50; i++){
+            this.books.push({
+                id: i,
+                name: 'Искусство программирования, Д.Кнут',
+                price: 210,
+                amount: 1
+            });
+        }
+    }
+}
+</script>
 <style>
-@import '@/assets/base.css';
+    body{
+        background-color: #181818;
+        color: white;
+    }
+    .parentContent{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+    }
+    .mainContent{
+        position: absolute;
+        width: 80%;
+        height: 80%;
+        box-shadow: 1px 1px 6px  4px rgb(0 255 255 / 20%),
+                    0px 2px 2px      rgb(0 255 255 / 14%),
+                    0px 3px 4px -2px rgb(0 255 255 / 12%);
+        border-radius: 5px;
+        display: flex;
+    }
+    h2{
+        margin-top: 0;
+    }
+    .leftContent{
+        width: 60%;
+        padding: 20px;
+    }
+    .separator{
+        border-left: 1px solid rgb(0 255 255 / 50%);
+        height: 90%;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .rightContent{
+        width: 40%;
+        padding: 20px;
+    }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-
-  font-weight: normal;
-}
-
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
-
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
+    @media (min-width: 769px){
+        .leftContent{
+            overflow: scroll;
+            overflow-x: hidden;
+            max-height: 94%;
+        }
+        .leftContent::-webkit-scrollbar {
+            width: 9px;
+        }
+        .leftContent::-webkit-scrollbar-thumb {
+            background-color: rgb(59, 59, 82);
+            border-radius: 20px;
+            border-style: solid;
+            border-width: 2px;
+            border-color: #181818;
+        }
+        .rightContent{
+            overflow: scroll;
+            overflow-x: hidden;
+            max-height: 94%;
+        }
+        .rightContent::-webkit-scrollbar {
+            width: 9px;
+        }
+        .rightContent::-webkit-scrollbar-thumb {
+            background-color: rgb(59, 59, 82);
+            border-radius: 20px;
+            border-style: solid;
+            border-width: 2px;
+            border-color: #181818;
+        }
+    }
+    @media (max-width: 1024px){
+        .mainContent{
+            width: 95%;
+            height: 95%;
+        }
+    }
+    @media (max-width: 768px){
+        .mainContent{
+            display: block;
+            overflow: scroll;
+            overflow-x: hidden;
+        }
+        .mainContent::-webkit-scrollbar {
+            width: 9px;
+        }
+        .mainContent::-webkit-scrollbar-thumb {
+            background-color: rgb(59, 59, 82);
+            border-radius: 20px;
+            border-style: solid;
+            border-width: 2px;
+            border-color: #181818;
+        }
+        .leftContent{
+            width: 90%;
+            padding-top: 0px;
+        }
+        .separator{
+            border-left: none;
+            border-bottom: 1px solid rgb(0 255 255 / 50%);
+            height: 0;
+            width: 85%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .rightContent{
+            width: 90%;
+            padding-top: 0;
+        }
+    }
 </style>
